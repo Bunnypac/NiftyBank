@@ -1,66 +1,36 @@
-
-import java.util.*;
-public class NiftyBank {
-
-    // Given symbol, get HTML
-    private static String readHTML(String symbol) {
-        In page = new In("http://finance.yahoo.com/quote/" + symbol);
-        String html = page.readAll();
-        if (html.contains("<title></title>")) return null;
-        else return html;
+import java.net.*;
+import java.io.*;
+public class NiftyBank
+{
+    public static void main(String[] args)
+    {
+        String output  = getUrlContents("https://finance.yahoo.com/quote/%5ENSEBANK/");
+        System.out.println(output);
     }
 
-    // Given symbol, get current stock price.
-    public static double priceOf(String symbol) {
-        String html = readHTML(symbol);
-        int p     = html.indexOf("price.0", 0);      // "price.0" index
-        int from  = html.indexOf(">", p);            // ">" index
-        int to    = html.indexOf("</span>", from);   // "</span>" index
-        String price = html.substring(from + 1, to);
+    private static String getUrlContents(String theUrl)
+    {
+        StringBuilder content = new StringBuilder();
+        // Use try and catch to avoid the exceptions
+        try
+        {
+            URL url = new URL(theUrl); // creating a url object
+            URLConnection urlConnection = url.openConnection(); // creating a urlconnection object
 
-        // remove any comma separators
-        return Double.parseDouble(price.replaceAll(",", ""));
-    }
-
-    // Given symbol, get current stock price.
-    public static double priceOf(String symbol, String html) {
-        int p     = html.indexOf("price.0", 0);      // "price.0" index
-        int from  = html.indexOf(">", p);            // ">" index
-        int to    = html.indexOf("</span>", from);   // "</span>" index
-        String price = html.substring(from + 1, to);
-
-        // remove any comma separators
-        return Double.parseDouble(price.replaceAll(",", ""));
-    }
-
-    // Given symbol, get current stock name.
-    public static String nameOf(String symbol, String html) {
-        int p    = html.indexOf("symbol.$companyName", 0);
-        int from = html.indexOf(">", p);
-        int to   = html.indexOf("</h6>", from);
-        String name = html.substring(from + 1, to);
-        return name;
-    }
-
-    // Given symbol, get current date.
-    public static String dateOf(String symbol, String html) {
-        int p    = html.indexOf("adx.bf1.yahoo.com", 0);
-        int from = html.indexOf(" ", p);
-        int to   = html.indexOf("-->", from);
-        String date = html.substring(from + 1, to);
-        return date;
-    }
-
-
-    public static void main(String[] args) {
-        String symbol = args[3];
-        String html = readHTML(symbol);
-        if (html == null) StdOut.println("Invalid symbol: " + symbol);
-        else {
-            StdOut.println(priceOf(symbol, html));
-            StdOut.println(nameOf(symbol, html));
-            StdOut.println(dateOf(symbol, html));
+            // wrapping the urlconnection in a bufferedreader
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            String line;
+            // reading from the urlconnection using the bufferedreader
+            while ((line = bufferedReader.readLine()) != null)
+            {
+                content.append(line + "\n");
+            }
+            bufferedReader.close();
         }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        return content.toString();
     }
-
-}
+}  
